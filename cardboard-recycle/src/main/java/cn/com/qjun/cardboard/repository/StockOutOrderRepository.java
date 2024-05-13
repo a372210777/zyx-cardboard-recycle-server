@@ -21,6 +21,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -44,4 +45,6 @@ public interface StockOutOrderRepository extends JpaRepository<StockOutOrder, St
     @Query(value = "select * from biz_stock_out_order o  join biz_stock_out_order_item oi on o.id = oi.stock_out_order_id \n" +
             " join basic_material m on oi.material_id = m.id   join basic_buyer b on o.buyer_id = b.id  where o.stock_out_time between ?1 and ?2 and o.deleted = 0 and (O.warehouse_id=NULL or O.warehouse_id=?3 )order by o.stock_out_time desc", nativeQuery = true)
     List<StockOutOrder> findAllByOrderByStockOutTimeDesc(String beginDate, String endDate,Integer warehouseId);
+
+
 }
