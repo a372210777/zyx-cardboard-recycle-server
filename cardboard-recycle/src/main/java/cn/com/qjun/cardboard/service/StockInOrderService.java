@@ -18,6 +18,7 @@ package cn.com.qjun.cardboard.service;
 import cn.com.qjun.cardboard.domain.StockInOrder;
 import cn.com.qjun.cardboard.service.dto.StockInOrderDto;
 import cn.com.qjun.cardboard.service.dto.StockInOrderQueryCriteria;
+import cn.com.qjun.cardboard.vo.StockOrderItem;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
@@ -75,6 +76,9 @@ public interface StockInOrderService {
     * @param resources /
     */
     void update(StockInOrder resources);
+
+
+    public void update(StockOrderItem resources);
 
     /**
     * 多选删除

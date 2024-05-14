@@ -16,17 +16,18 @@
 package cn.com.qjun.cardboard.service.impl;
 
 import cn.com.qjun.cardboard.common.SystemConstant;
-import cn.com.qjun.cardboard.domain.StockInOrder;
-import cn.com.qjun.cardboard.service.dto.StockInOrderItemDto;
-import cn.com.qjun.cardboard.service.dto.StockReportDto;
+import cn.com.qjun.cardboard.domain.*;
+import cn.com.qjun.cardboard.repository.*;
+import cn.com.qjun.cardboard.service.BasicSupplierService;
+import cn.com.qjun.cardboard.service.BasicWarehouseService;
+import cn.com.qjun.cardboard.service.dto.*;
 import cn.com.qjun.cardboard.utils.SerialNumberGenerator;
+import cn.com.qjun.cardboard.vo.StockOrderItem;
+import cn.com.qjun.cardboard.vo.StockOrderItemVo;
 import com.google.common.collect.Lists;
 import me.zhengjie.utils.*;
 import lombok.RequiredArgsConstructor;
-import cn.com.qjun.cardboard.repository.StockInOrderRepository;
 import cn.com.qjun.cardboard.service.StockInOrderService;
-import cn.com.qjun.cardboard.service.dto.StockInOrderDto;
-import cn.com.qjun.cardboard.service.dto.StockInOrderQueryCriteria;
 import cn.com.qjun.cardboard.service.mapstruct.StockInOrderMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -39,6 +40,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.io.IOException;
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 
 import java.time.format.DateTimeFormatter;
@@ -58,6 +60,16 @@ public class StockInOrderServiceImpl implements StockInOrderService {
     private final SerialNumberGenerator serialNumberGenerator;
     private final JdbcTemplate jdbcTemplate;
 
+    @Resource
+    private StockInOrderItemRepository stockInOrderItemRepository;
+
+    @Resource
+    private BasicWarehouseRepository basicWarehouseRepository;
+    @Resource
+    private BasicSupplierRepository supplierRepository;
+    @Resource
+    private BasicMaterialRepository materialRepository;
+
     @Override
     public Map<String, Object> queryAll(StockInOrderQueryCriteria criteria, Pageable pageable) {
         Page<StockInOrder> page = stockInOrderRepository.findAll((root, criteriaQuery, criteriaBuilder) -> QueryHelp.getPredicate(root, criteria, criteriaBuilder), pageable);
@@ -72,7 +84,7 @@ public class StockInOrderServiceImpl implements StockInOrderService {
 
     //zmq新加方法   public List<StockInOrderDto>
     @Override
-    public  List<StockInOrderDto> queryAllSortByStockInTime(StockInOrderQueryCriteria criteria) {
+    public List<StockInOrderDto> queryAllSortByStockInTime(StockInOrderQueryCriteria criteria) {
         // 将 Timestamp 转换为 LocalDateTime
         System.out.println("queryAllSortByStockInTime");
         LocalDateTime localStartDateTime = criteria.getStockInTime().get(0).toLocalDateTime();
@@ -86,7 +98,7 @@ public class StockInOrderServiceImpl implements StockInOrderService {
         String localEndDateStr = localEndDate.format(formatter);
         System.out.println(localStartDateStr);
         System.out.println(localEndDateStr);
-        List<StockInOrder> all = stockInOrderRepository.findAllByOrderByStockInTimeDesc(localStartDateStr,localEndDateStr);
+        List<StockInOrder> all = stockInOrderRepository.findAllByOrderByStockInTimeDesc(localStartDateStr, localEndDateStr);
 
         //有点问题，正常应该是数据排序，不需要再重新排
         List<StockInOrder> sortResult = new ArrayList<StockInOrder>(new HashSet<>(all));
@@ -128,6 +140,51 @@ public class StockInOrderServiceImpl implements StockInOrderService {
         ValidationUtil.isNull(stockInOrder.getId(), "StockInOrder", "id", resources.getId());
         stockInOrder.copy(resources);
         stockInOrderRepository.save(stockInOrder);
+    }
+
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void update(StockOrderItem resources) {
+
+        /**
+         * 修改入库单本身
+         */
+        StockInOrder stockInOrder = this.stockInOrderRepository.getById(resources.getOrderId());
+        stockInOrder.setId(resources.getOrderId());
+        BasicWarehouse basicWarehouse = basicWarehouseRepository.findById(resources.getStockId()).orElseGet(BasicWarehouse::new);
+        stockInOrder.setWarehouse(basicWarehouse);
+        stockInOrder.setSupplier(this.supplierRepository.findById(resources.getSupplier()).orElseGet(BasicSupplier::new));
+        stockInOrder.setStockInTime(resources.getStockInTime());
+        this.stockInOrderRepository.save(stockInOrder);
+
+        /**
+         * 保存明细数据
+         */
+        for (StockOrderItemVo orderItem : resources.getOrderItems()) {
+            StockInOrderItem entity = null;
+            if (orderItem.isNew()) {
+                /**
+                 * 新增明细
+                 */
+                entity = new StockInOrderItem();
+                entity.setStockInOrder(stockInOrder);
+
+            } else {
+                /**
+                 * 修改明细
+                 */
+                entity = this.stockInOrderItemRepository.getById(orderItem.getId());
+            }
+            entity.setUnit(orderItem.getUnit());
+            entity.setRemark(orderItem.getRemark());
+            entity.setQuantity(orderItem.getQuantity().intValue());
+            entity.setMaterial(this.materialRepository.findById(orderItem.getMaterial().getId()).orElseGet(BasicMaterial::new));
+            entity.setUnitPrice(orderItem.getUnitPrice());
+            this.stockInOrderItemRepository.save(entity);
+        }
+
+
     }
 
     @Override

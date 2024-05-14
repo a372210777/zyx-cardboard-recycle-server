@@ -17,6 +17,7 @@ package cn.com.qjun.cardboard.rest;
 
 import cn.com.qjun.cardboard.service.dto.StockInOrderDto;
 import cn.com.qjun.cardboard.utils.SerialNumberGenerator;
+import cn.com.qjun.cardboard.vo.StockOrderItem;
 import me.zhengjie.annotation.Log;
 import cn.com.qjun.cardboard.domain.StockInOrder;
 import cn.com.qjun.cardboard.service.StockInOrderService;
@@ -98,7 +99,7 @@ public class StockInOrderController {
     @Log("修改入库单")
     @ApiOperation("修改入库单")
     @PreAuthorize("@el.check('stockInOrder:edit')")
-    public ResponseEntity<Object> updateStockInOrder(@Validated @RequestBody StockInOrder resources){
+    public ResponseEntity<Object> updateStockInOrder(@Validated @RequestBody StockOrderItem resources){
         stockInOrderService.update(resources);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
