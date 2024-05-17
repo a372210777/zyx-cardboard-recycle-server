@@ -30,6 +30,6 @@ import java.time.LocalDateTime;
 **/
 public interface StockOutOrderItemRepository extends JpaRepository<StockOutOrderItem, Integer>, JpaSpecificationExecutor<StockOutOrderItem> {
 
-    @Query(value = "SELECT sum( t.quantity ) FROM biz_stock_out_order_item t LEFT JOIN biz_stock_out_order biz ON biz.id = t.stock_out_order_id WHERE biz.stock_out_time <= ?3 AND material_id = ?2 AND biz.warehouse_id = ?1" ,nativeQuery = true)
+    @Query(value = "SELECT sum( t.quantity ) FROM biz_stock_out_order_item t LEFT JOIN biz_stock_out_order biz ON biz.id = t.stock_out_order_id WHERE biz.deleted!=1 and  biz.stock_out_time <= ?3 AND material_id = ?2 AND biz.warehouse_id = ?1" ,nativeQuery = true)
     String queryStockOutData(Integer stockId, Integer materialId, LocalDateTime dateTime );
 }

@@ -21,14 +21,17 @@ import cn.com.qjun.cardboard.repository.*;
 import cn.com.qjun.cardboard.service.BasicSupplierService;
 import cn.com.qjun.cardboard.service.BasicWarehouseService;
 import cn.com.qjun.cardboard.service.dto.*;
+import cn.com.qjun.cardboard.service.mapstruct.StockInOrderItemMapper;
 import cn.com.qjun.cardboard.utils.SerialNumberGenerator;
 import cn.com.qjun.cardboard.vo.StockOrderItem;
 import cn.com.qjun.cardboard.vo.StockOrderItemVo;
+import cn.hutool.core.collection.CollUtil;
 import com.google.common.collect.Lists;
 import me.zhengjie.utils.*;
 import lombok.RequiredArgsConstructor;
 import cn.com.qjun.cardboard.service.StockInOrderService;
 import cn.com.qjun.cardboard.service.mapstruct.StockInOrderMapper;
+import org.springframework.data.domain.Example;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
@@ -44,6 +47,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 
 import java.time.format.DateTimeFormatter;
+import java.util.stream.Collectors;
 
 /**
  * @author RenQiang
@@ -62,6 +66,8 @@ public class StockInOrderServiceImpl implements StockInOrderService {
 
     @Resource
     private StockInOrderItemRepository stockInOrderItemRepository;
+    @Resource
+    private StockInOrderItemMapper stockInOrderItemMapper;
 
     @Resource
     private BasicWarehouseRepository basicWarehouseRepository;
@@ -158,6 +164,8 @@ public class StockInOrderServiceImpl implements StockInOrderService {
         stockInOrder.setStockInTime(resources.getStockInTime());
         this.stockInOrderRepository.save(stockInOrder);
 
+        List<StockInOrderItem> list = this.stockInOrderItemRepository.findListByStockInOrderId(stockInOrder.getId());
+        Map<BasicMaterial, List<StockInOrderItem>> collect = list.stream().collect(Collectors.groupingBy(StockInOrderItem::getMaterial));
         /**
          * 保存明细数据
          */
@@ -175,6 +183,7 @@ public class StockInOrderServiceImpl implements StockInOrderService {
                  * 修改明细
                  */
                 entity = this.stockInOrderItemRepository.getById(orderItem.getId());
+                collect.remove(orderItem);
             }
             entity.setUnit(orderItem.getUnit());
             entity.setRemark(orderItem.getRemark());
@@ -183,7 +192,15 @@ public class StockInOrderServiceImpl implements StockInOrderService {
             entity.setUnitPrice(orderItem.getUnitPrice());
             this.stockInOrderItemRepository.save(entity);
         }
-
+        /**
+         * 其它的都删除
+         */
+        collect.keySet().forEach(key -> {
+            List<StockInOrderItem> stockInOrderItems = collect.get(key);
+            if (CollUtil.isNotEmpty(stockInOrderItems)) {
+                this.stockInOrderItemRepository.delete(stockInOrderItems.get(0));
+            }
+        });
 
     }
 

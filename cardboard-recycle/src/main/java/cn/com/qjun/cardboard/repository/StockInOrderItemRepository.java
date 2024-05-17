@@ -33,6 +33,9 @@ public interface StockInOrderItemRepository extends JpaRepository<StockInOrderIt
     @Query(value = "from StockInOrderItem oi where year(oi.stockInOrder.stockInTime) = ?1 and month(oi.stockInOrder.stockInTime) = ?2 and oi.material.id in ?3")
     List<StockInOrderItem> findByMonthAndMaterials(Integer year, Integer month, Set<Integer> materialIds);
 
-    @Query(value = "SELECT sum(t.quantity) FROM biz_stock_in_order_item t LEFT JOIN biz_stock_in_order biz ON biz.id = t.stock_in_order_id WHERE biz.stock_in_time <= ?3 and material_id =?2  and biz.warehouse_id = ?1",nativeQuery = true)
+    @Query(value = "SELECT sum(t.quantity) FROM biz_stock_in_order_item t LEFT JOIN biz_stock_in_order biz ON biz.id = t.stock_in_order_id WHERE biz.deleted!=1 and  biz.stock_in_time <= ?3 and material_id =?2  and biz.warehouse_id = ?1",nativeQuery = true)
     String queryStockInData(Integer stockId, Integer materialId, LocalDateTime dateTime);
+
+    @Query(value = "SELECT sum(t.quantity) FROM biz_stock_in_order_item t WHERE t.biz_stock_in_order_item = ?1",nativeQuery = true)
+    List<StockInOrderItem> findListByStockInOrderId(String orderId);
 }
