@@ -188,6 +188,8 @@ public class StockInOrderServiceImpl implements StockInOrderService {
                 if (ObjectUtil.isEmpty(entity)) {
                     collect.remove(orderItem.getId());
                     continue;
+                } else {
+                    collect.remove(orderItem.getId());
                 }
             }
             entity.setUnit(orderItem.getUnit());
