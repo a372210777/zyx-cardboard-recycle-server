@@ -26,6 +26,7 @@ import cn.com.qjun.cardboard.utils.SerialNumberGenerator;
 import cn.com.qjun.cardboard.vo.StockOrderItem;
 import cn.com.qjun.cardboard.vo.StockOrderItemVo;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.google.common.collect.Lists;
 import me.zhengjie.utils.*;
 import lombok.RequiredArgsConstructor;
@@ -165,7 +166,8 @@ public class StockInOrderServiceImpl implements StockInOrderService {
         this.stockInOrderRepository.save(stockInOrder);
 
         List<StockInOrderItem> list = this.stockInOrderItemRepository.findListByStockInOrderId(stockInOrder.getId());
-        Map<BasicMaterial, List<StockInOrderItem>> collect = list.stream().collect(Collectors.groupingBy(StockInOrderItem::getMaterial));
+//        Map<BasicMaterial, List<StockInOrderItem>> collect = list.stream().collect(Collectors.groupingBy(StockInOrderItem::getMaterial));
+        Map<Integer, List<StockInOrderItem>> collect = list.stream().collect(Collectors.groupingBy(StockInOrderItem::getId));
         /**
          * 保存明细数据
          */
@@ -182,8 +184,11 @@ public class StockInOrderServiceImpl implements StockInOrderService {
                 /**
                  * 修改明细
                  */
-                entity = this.stockInOrderItemRepository.getById(orderItem.getId());
-                collect.remove(orderItem);
+                entity = this.stockInOrderItemRepository.getStockInOrderItemById(orderItem.getId());
+                if (ObjectUtil.isEmpty(entity)) {
+                    collect.remove(orderItem.getId());
+                    continue;
+                }
             }
             entity.setUnit(orderItem.getUnit());
             entity.setRemark(orderItem.getRemark());
