@@ -101,7 +101,7 @@ public class StockInOrderController {
     @PreAuthorize("@el.check('stockInOrder:edit')")
     public ResponseEntity<Object> updateStockInOrder(@Validated @RequestBody StockOrderItem resources){
         stockInOrderService.update(resources);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @DeleteMapping
