@@ -96,10 +96,11 @@ public class StockInOrderController {
         if (CollectionUtils.isEmpty(resources.getOrderItems())) {
             throw new BadRequestException("入库单明细不能为空");
         }
-        Long currentUserId = SecurityUtils.getCurrentUserId();
-        resources.setCreateBy(""+currentUserId);
+//        Long currentUserId = SecurityUtils.getCurrentUserId();
+        String currentUsername = SecurityUtils.getCurrentUsername();
+        resources.setCreateBy(""+currentUsername);
         resources.setCreateTime(Timestamp.from(Instant.now()));
-        resources.setUpdateBy(""+currentUserId);
+        resources.setUpdateBy(""+currentUsername);
         resources.setUpdateTime(Timestamp.from(Instant.now()));
         resources.setDeleted(0);
         return new ResponseEntity<>(stockInOrderService.create(resources),HttpStatus.CREATED);
