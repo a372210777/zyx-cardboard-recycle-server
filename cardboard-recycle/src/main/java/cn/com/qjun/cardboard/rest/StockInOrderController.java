@@ -23,6 +23,7 @@ import cn.com.qjun.cardboard.domain.StockInOrder;
 import cn.com.qjun.cardboard.service.StockInOrderService;
 import cn.com.qjun.cardboard.service.dto.StockInOrderQueryCriteria;
 import me.zhengjie.exception.BadRequestException;
+import me.zhengjie.utils.SecurityUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.data.domain.Pageable;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +35,10 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.annotations.*;
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 
@@ -92,6 +96,12 @@ public class StockInOrderController {
         if (CollectionUtils.isEmpty(resources.getOrderItems())) {
             throw new BadRequestException("入库单明细不能为空");
         }
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        resources.setCreateBy(""+currentUserId);
+        resources.setCreateTime(Timestamp.from(Instant.now()));
+        resources.setUpdateBy(""+currentUserId);
+        resources.setUpdateTime(Timestamp.from(Instant.now()));
+        resources.setDeleted(0);
         return new ResponseEntity<>(stockInOrderService.create(resources),HttpStatus.CREATED);
     }
 

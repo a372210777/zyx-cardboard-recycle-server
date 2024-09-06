@@ -64,7 +64,7 @@ public class StockOutOrderServiceImpl implements StockOutOrderService {
     @Override
     public  List<StockOutOrderDto> queryAllSortByStockOutTime(StockOutOrderQueryCriteria criteria) {
         // 将 Timestamp 转换为 LocalDateTime
-        System.out.println("queryAllSortByStockInTime");
+        System.out.println("queryAllSortByStockOutTime");
         LocalDateTime localStartDateTime = criteria.getStockOutTime().get(0).toLocalDateTime();
         LocalDate localStartDate = localStartDateTime.toLocalDate();
         LocalDateTime localEndDateTime = criteria.getStockOutTime().get(1).toLocalDateTime();
@@ -89,7 +89,8 @@ public class StockOutOrderServiceImpl implements StockOutOrderService {
                 return o2.getStockOutTime().compareTo(o1.getStockOutTime());
             }
         });
-
+        System.out.println("test");
+        System.out.println(sortResult);
 //        return all;
         return stockOutOrderMapper.toDto(sortResult);
 
