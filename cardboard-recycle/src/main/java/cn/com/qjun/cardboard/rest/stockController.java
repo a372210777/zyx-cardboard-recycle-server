@@ -32,7 +32,7 @@ public class stockController {
     public ResponseEntity<String> queryStock(@RequestParam(required = true) @ApiParam("仓库ID") Integer warehouseId,
                                              @RequestParam(required = false) @ApiParam("物料ID") Integer materialId,
                                              @RequestParam(required = true) @ApiParam("统计日期") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
-        System.out.print("接收参数：");
+        System.out.println("接收参数：");
         System.out.println(warehouseId);
         System.out.println(materialId);
         System.out.println(date);
@@ -40,9 +40,11 @@ public class stockController {
 
 
         if (warehouseId == null) {
+            System.out.print("warehouseId is null");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("请选择仓库");
         }
         if (date == null) {
+            System.out.print("date is null");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("请选择日期");
         }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -50,7 +52,7 @@ public class stockController {
         String formattedDate = date.format(formatter);
         System.out.println(formattedDate);
         System.out.println(date.toString());
-        stockManageService.queryAll(warehouseId,materialId,formattedDate);
+//        stockManageService.queryAll(warehouseId,materialId,formattedDate);
         return null;
     }
 }

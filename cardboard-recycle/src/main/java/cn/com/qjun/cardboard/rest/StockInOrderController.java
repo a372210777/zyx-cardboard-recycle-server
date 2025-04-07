@@ -72,6 +72,7 @@ public class StockInOrderController {
         System.out.println("导出入库单===");
         System.out.println(criteria);
 //        stockInOrderService.download(stockInOrderService.queryAll(criteria), response);
+        System.out.println("===rucan"+criteria.getId());
         List<StockInOrderDto> all = stockInOrderService.queryAllSortByStockInTime(criteria);
          stockInOrderService.download(all, response);
     }

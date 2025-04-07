@@ -26,6 +26,7 @@ import cn.com.qjun.cardboard.utils.SerialNumberGenerator;
 import cn.com.qjun.cardboard.vo.StockOrderItem;
 import cn.com.qjun.cardboard.vo.StockOrderItemVo;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.google.common.collect.Lists;
 import me.zhengjie.utils.*;
@@ -94,25 +95,35 @@ public class StockInOrderServiceImpl implements StockInOrderService {
     public List<StockInOrderDto> queryAllSortByStockInTime(StockInOrderQueryCriteria criteria) {
         // 将 Timestamp 转换为 LocalDateTime
         System.out.println("queryAllSortByStockInTime");
-        LocalDateTime localStartDateTime = criteria.getStockInTime().get(0).toLocalDateTime();
-        LocalDate localStartDate = localStartDateTime.toLocalDate();
-        LocalDateTime localEndDateTime = criteria.getStockInTime().get(1).toLocalDateTime();
-        LocalDate localEndDate = localEndDateTime.toLocalDate();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        if (null==criteria||(StringUtils.isBlank(criteria.getId())&& CollectionUtil.isEmpty(criteria.getStockInTime()))){
+            throw new RuntimeException("请在条件栏中输入单号/入库时间");
+        }
+        List<StockInOrder> all =new ArrayList<>();
+        if (CollectionUtil.isNotEmpty(criteria.getStockInTime())) {
+            LocalDateTime localStartDateTime = criteria.getStockInTime().get(0).toLocalDateTime();
+            LocalDate localStartDate = localStartDateTime.toLocalDate();
+            LocalDateTime localEndDateTime = criteria.getStockInTime().get(1).toLocalDateTime();
+            LocalDate localEndDate = localEndDateTime.toLocalDate();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-        // 使用DateTimeFormatter将LocalDate对象格式化为字符串
-        String localStartDateStr = localStartDate.format(formatter);
-        String localEndDateStr = localEndDate.format(formatter);
-        System.out.println(localStartDateStr);
-        System.out.println(localEndDateStr);
-        List<StockInOrder> all = stockInOrderRepository.findAllByOrderByStockInTimeDesc(localStartDateStr, localEndDateStr);
-
+            // 使用DateTimeFormatter将LocalDate对象格式化为字符串
+            String localStartDateStr = localStartDate.format(formatter);
+            String localEndDateStr = localEndDate.format(formatter);
+            System.out.println(localStartDateStr);
+            System.out.println(localEndDateStr);
+            all = stockInOrderRepository.findAllByOrderByStockInTimeDesc(localStartDateStr, localEndDateStr);
+        }else {
+            all = stockInOrderRepository.selectOneById(criteria.getId());
+        }
+        if (CollectionUtil.isEmpty(all)){
+            throw new RuntimeException("无数据可导出");
+        }
         //有点问题，正常应该是数据排序，不需要再重新排
         List<StockInOrder> sortResult = new ArrayList<StockInOrder>(new HashSet<>(all));
         Collections.sort(sortResult, new Comparator<StockInOrder>() {
             @Override
             public int compare(StockInOrder o1, StockInOrder o2) {
-                return o2.getStockInTime().compareTo(o1.getStockInTime());
+                return o1.getStockInTime().compareTo(o2.getStockInTime());
             }
         });
 
