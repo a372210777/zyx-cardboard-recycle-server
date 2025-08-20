@@ -7,9 +7,9 @@ spring:
 #      url: jdbc:log4jdbc:mysql://nas.qjun.com.cn:3307/cardboard_recycle?serverTimezone=Asia/Shanghai&characterEncoding=utf8&useSSL=false
 #      username: qjun_dev
 #      password: uF2)e@i5mO
-      url: jdbc:log4jdbc:mysql://localhost:3306/cardboard_recycle?serverTimezone=Asia/Shanghai&characterEncoding=utf8&useSSL=false
+      url: jdbc:log4jdbc:mysql://47.121.27.189:3306/cardboard_recycle?serverTimezone=Asia/Shanghai&characterEncoding=utf8&useSSL=false
       username: root
-      password: admin
+      password: Aa12345.
       # 初始连接数
       initial-size: 5
       # 最小连接数
