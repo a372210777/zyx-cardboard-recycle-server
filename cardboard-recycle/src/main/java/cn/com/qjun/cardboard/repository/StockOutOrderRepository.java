@@ -43,7 +43,8 @@ public interface StockOutOrderRepository extends JpaRepository<StockOutOrder, St
 
     //zmq新加方法
     @Query(value = "select * from biz_stock_out_order o  left join biz_stock_out_order_item oi on o.id = oi.stock_out_order_id \n" +
-            " left join basic_material m on oi.material_id = m.id   left join basic_buyer b on o.buyer_id = b.id  where o.stock_out_time between ?1 and ?2 and o.deleted = 0 and (O.warehouse_id=NULL or O.warehouse_id=?3 )order by o.stock_out_time asc", nativeQuery = true)
+            " left join basic_material m on oi.material_id = m.id   left join basic_buyer b on o.buyer_id = b.id  where o.stock_out_time between ?1 and ?2 " +
+            "and o.deleted = 0 and (o.warehouse_id=NULL or o.warehouse_id=?3 )order by o.stock_out_time asc", nativeQuery = true)
     List<StockOutOrder> findAllByOrderByStockOutTimeDesc(String beginDate, String endDate,Integer warehouseId);
 
 
